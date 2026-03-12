@@ -1,3 +1,4 @@
+// wasm: finufft
 // finufft1d1(x, c_re, c_im, iflag, tol, ms) -> [fk_re, fk_im]
 // 1D type 1 non-uniform FFT via FINUFFT compiled to WebAssembly.
 register({

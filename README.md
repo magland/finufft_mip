@@ -18,7 +18,7 @@ cd finufft_mip
 bash build_wasm.sh
 ```
 
-This produces `finufft1d1.wasm` (~1.9 MB) in the repo root.
+This produces `finufft.wasm` (~1.9 MB) in the repo root.
 
 ## Usage in numbl
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build FINUFFT as a WebAssembly module using Emscripten + CMake.
-# Produces finufft1d1.wasm in this directory.
+# Produces finufft.wasm in this directory.
 #
 # Prerequisites: emcc, emcmake, emmake on PATH (Emscripten SDK)
 #
@@ -65,7 +65,7 @@ echo "  common:  $LIBCOMMON"
 echo "  ducc0:   ${LIBDUCC0:-not found}"
 
 # Step 3: Link wrapper + FINUFFT into standalone WASM
-echo "=== Linking finufft1d1.wasm ==="
+echo "=== Linking finufft.wasm ==="
 cd "$SCRIPT_DIR"
 
 LINK_LIBS="$LIBFINUFFT $LIBCOMMON"
@@ -73,7 +73,7 @@ if [ -n "$LIBDUCC0" ]; then
   LINK_LIBS="$LINK_LIBS $LIBDUCC0"
 fi
 
-em++ finufft1d1_wrapper.cpp \
+em++ finufft_wrapper.cpp \
   -I"$FINUFFT_SRC/include" \
   $LINK_LIBS \
   -O2 \
@@ -82,6 +82,6 @@ em++ finufft1d1_wrapper.cpp \
   --no-entry \
   -s TOTAL_MEMORY=67108864 \
   -s ALLOW_MEMORY_GROWTH=1 \
-  -o finufft1d1.wasm
+  -o finufft.wasm
 
-echo "=== Built finufft1d1.wasm ($(wc -c < finufft1d1.wasm) bytes) ==="
+echo "=== Built finufft.wasm ($(wc -c < finufft.wasm) bytes) ==="
