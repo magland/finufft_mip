@@ -6,8 +6,10 @@ ms = 15;            % number of output Fourier modes
 tol = 1e-9;
 iflag = 1;
 
-% Deterministic nonuniform points in [-pi, pi)
-x = linspace(-pi, pi - 2*pi/nj, nj);
+% Truly nonuniform points in [-pi, pi) (jittered grid)
+x_uniform = linspace(-pi, pi - 2*pi/nj, nj);
+jitter = 0.3 * sin((1:nj) * 2.1) + 0.2 * cos((1:nj) * 0.9);
+x = x_uniform + jitter * (2*pi/nj);
 
 % Deterministic complex strengths
 c_re = sin((1:nj) * 0.7);
