@@ -1,24 +1,21 @@
 // wasm: finufft
-// finufft2d1(x, y, c_re, c_im, iflag, tol, ms, mt) -> [fk_re, fk_im]
-// 2D type 1 non-uniform FFT (nonuniform → uniform).
+// finufft2d1(x, y, c, iflag, tol, ms, mt) -> fk
+// 2D type 1 non-uniform FFT (nonuniform -> uniform).
+// c is complex, fk is complex.
 register({
   check: function (argTypes, nargout) {
     return {
-      outputTypes: [
-        IType.tensor({ isComplex: false }),
-        IType.tensor({ isComplex: false }),
-      ],
+      outputTypes: [IType.tensor({ isComplex: true })],
     };
   },
   apply: function (args, nargout) {
     var x = args[0];
     var y = args[1];
-    var c_re = args[2];
-    var c_im = args[3];
-    var iflag = args[4];
-    var tol = args[5];
-    var ms = args[6];
-    var mt = args[7];
+    var c = args[2];
+    var iflag = args[3];
+    var tol = args[4];
+    var ms = args[5];
+    var mt = args[6];
 
     var nj = x.data.length;
     var nout = ms * mt;
@@ -36,8 +33,12 @@ register({
     var view = new Float64Array(mem.buffer);
     view.set(new Float64Array(x.data.buffer, x.data.byteOffset, nj), x_ptr / BYTES);
     view.set(new Float64Array(y.data.buffer, y.data.byteOffset, nj), y_ptr / BYTES);
-    view.set(new Float64Array(c_re.data.buffer, c_re.data.byteOffset, nj), cre_ptr / BYTES);
-    view.set(new Float64Array(c_im.data.buffer, c_im.data.byteOffset, nj), cim_ptr / BYTES);
+    view.set(new Float64Array(c.data.buffer, c.data.byteOffset, nj), cre_ptr / BYTES);
+    if (c.imag) {
+      view.set(new Float64Array(c.imag.buffer, c.imag.byteOffset, nj), cim_ptr / BYTES);
+    } else {
+      view.fill(0, cim_ptr / BYTES, cim_ptr / BYTES + nj);
+    }
 
     var ier = exports.nufft2d1(nj, x_ptr, y_ptr, cre_ptr, cim_ptr, iflag, tol, ms, mt, fkre_ptr, fkim_ptr);
     if (ier !== 0) {
@@ -48,17 +49,17 @@ register({
     }
 
     view = new Float64Array(mem.buffer);
-    var fk_re_out = new FloatXArray(nout);
-    var fk_im_out = new FloatXArray(nout);
+    var fk_re = new FloatXArray(nout);
+    var fk_im = new FloatXArray(nout);
     for (var i = 0; i < nout; i++) {
-      fk_re_out[i] = view[fkre_ptr / BYTES + i];
-      fk_im_out[i] = view[fkim_ptr / BYTES + i];
+      fk_re[i] = view[fkre_ptr / BYTES + i];
+      fk_im[i] = view[fkim_ptr / BYTES + i];
     }
 
     exports.my_free(x_ptr); exports.my_free(y_ptr);
     exports.my_free(cre_ptr); exports.my_free(cim_ptr);
     exports.my_free(fkre_ptr); exports.my_free(fkim_ptr);
 
-    return [RTV.tensor(fk_re_out, [ms, mt]), RTV.tensor(fk_im_out, [ms, mt])];
+    return RTV.tensor(fk_re, [ms, mt], fk_im);
   },
 });

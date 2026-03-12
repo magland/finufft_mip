@@ -12,9 +12,10 @@ x = linspace(-pi, pi - 2*pi/nj, nj);
 % Deterministic complex strengths
 c_re = sin((1:nj) * 0.7);
 c_im = cos((1:nj) * 1.3);
+c = complex(c_re, c_im);
 
-% Call FINUFFT via WASM
-[fk_re, fk_im] = finufft1d1(x, c_re, c_im, iflag, tol, ms);
+% Call FINUFFT via WASM (complex interface)
+fk = finufft1d1(x, c, iflag, tol, ms);
 
 % Brute-force DFT for verification
 % For type 1 with iflag=+1: F[k] = sum_j c[j] * exp(+i * k * x[j])
@@ -32,8 +33,8 @@ for idx = 1:ms
         Fk_re = Fk_re + c_re(j) * cp - c_im(j) * sp;
         Fk_im = Fk_im + c_re(j) * sp + c_im(j) * cp;
     end
-    err_re = abs(fk_re(idx) - Fk_re);
-    err_im = abs(fk_im(idx) - Fk_im);
+    err_re = abs(real(fk(idx)) - Fk_re);
+    err_im = abs(imag(fk(idx)) - Fk_im);
     scale = max(abs(Fk_re) + abs(Fk_im), 1e-15);
     assert((err_re + err_im) / scale < 1e-6, ...
         sprintf('Mode k=%d: error too large (re=%.3g, im=%.3g)', k, err_re, err_im));
